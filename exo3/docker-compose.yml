@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  webapp:
+    build: .
+    ports:
+      - "5003:5003"
+    volumes:
+      # Volume pour la persistance des données
+      - data-volume:/data
+      # Volume pour les logs
+      - log-volume:/var/log/nginx
+      # Montage en lecture seule pour les configurations
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
+
+volumes:
+  data-volume:
+    driver: local
+  log-volume:
+    driver: local 

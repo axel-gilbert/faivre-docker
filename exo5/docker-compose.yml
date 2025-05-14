@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # Service d'application (Flask)
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.flask
+    container_name: flask-app
+    restart: unless-stopped
+    networks:
+      - app-network
+    volumes:
+      - ./app:/app/app
+    environment:
+      - FLASK_ENV=development
+    # Pas d'exposition de port vers l'extérieur, uniquement accessible via le réseau interne
+
+  # Service web (Nginx)
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "5005:80"
+    depends_on:
+      - flask-app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge 
