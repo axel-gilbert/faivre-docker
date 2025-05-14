@@ -7,24 +7,25 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Création d'un utilisateur non-root
-RUN useradd -m -s /bin/bash appuser
+RUN useradd -m appuser
 
-# Création du répertoire d'application
+# Création du répertoire de travail
 WORKDIR /app
 
-# Copie des fichiers d'application
-COPY requirements.txt .
+# Copie des fichiers avec bonnes permissions
+COPY --chown=appuser:appuser requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copie du reste de l'application
-COPY app.py .
+COPY --chown=appuser:appuser app/app.py .
 
-# Configuration des permissions
-RUN chown -R appuser:appuser /app
+# Changement des permissions
+RUN chmod 755 /app && chmod 644 /app/app.py /app/requirements.txt
+
+# Utilisation de l'utilisateur non-root
 USER appuser
 
-# Exposition du port
-EXPOSE 8000
+# Changement de port
+EXPOSE 5001
 
-# Commande de démarrage
+# Modification pour utiliser python3
 CMD ["python3", "app.py"] 
