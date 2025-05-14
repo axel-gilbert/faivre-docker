@@ -1,0 +1,29 @@
+FROM python:3.9-slim
+
+# Création d'un utilisateur non-root
+RUN groupadd -r flaskuser && useradd -r -g flaskuser -s /bin/false flaskuser
+
+WORKDIR /app
+
+# Installation des dépendances
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copie de l'application
+COPY app/app.py .
+
+# Configuration des permissions
+RUN chown -R flaskuser:flaskuser /app && \
+    chmod -R 755 /app
+
+# Le port est 5000 pour communiquer avec Nginx en interne
+EXPOSE 5000
+
+# Passage à l'utilisateur non-root
+USER flaskuser
+
+# Limitations de sécurité supplémentaires
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+CMD ["python", "app.py"] 

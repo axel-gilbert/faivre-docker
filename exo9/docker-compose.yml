@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # Service d'application (Flask)
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.flask
+    container_name: flask-app-secure
+    restart: unless-stopped
+    # Limitations de ressources
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    # Sécurité renforcée
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - backend
+    volumes:
+      - ./app:/app/app:ro  # Montage en lecture seule
+    # Pas d'exposition de port vers l'extérieur, uniquement accessible via le réseau interne
+    read_only: true  # Système de fichiers en lecture seule
+
+  # Service web (Nginx)
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: nginx-secure
+    restart: unless-stopped
+    # Limitations de ressources
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    # Sécurité renforcée
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    # Autorisation uniquement des capacités nécessaires
+    cap_add:
+      - NET_BIND_SERVICE
+    ports:
+      - "5009:80"
+    depends_on:
+      - flask-app
+    networks:
+      - frontend
+      - backend
+    # Le système de fichiers de base reste en lecture seule, mais certains dossiers doivent être accessibles en écriture
+    read_only: true
+    # Dossiers nécessitant un accès en écriture
+    tmpfs:
+      - /tmp:uid=101,gid=101
+      - /var/run:uid=101,gid=101 
+    # Volumes pour les logs et le cache
+    volumes:
+      - nginx_cache:/var/cache/nginx
+      - nginx_logs:/var/log/nginx
+
+networks:
+  frontend:
+    # Réseau pour l'accès externe
+    driver: bridge
+  backend:
+    # Réseau isolé pour la communication interne
+    driver: bridge
+    internal: true  # Pas d'accès à internet depuis ce réseau
+
+volumes:
+  nginx_cache:
+  nginx_logs: 
