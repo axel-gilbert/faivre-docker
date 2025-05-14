@@ -1,0 +1,14 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY app/app.py .
+
+# Le port est configurable via une variable d'environnement
+EXPOSE ${FLASK_PORT:-5000}
+
+# Utilise la variable d'environnement FLASK_APP si elle est définie
+CMD ["python", "app.py"] 

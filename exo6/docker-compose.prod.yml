@@ -1,0 +1,16 @@
+# Configuration spécifique pour la production
+
+services:
+  flask-app:
+    # En production, pas de montage de volume pour le code
+    volumes: []
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+  
+  nginx:
+    # En production, on utilise le port 80
+    ports:
+      - "${EXPOSED_PORT:-80}:${NGINX_PORT:-80}"
+    # Pas de répliques pour éviter les conflits de port
+    restart: unless-stopped 

@@ -1,0 +1,18 @@
+# Ce fichier est automatiquement chargé avec docker-compose.yml
+# Il contient des surcharges pour le développement
+
+services:
+  flask-app:
+    volumes:
+      - ./app:/app/app
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    # En développement, on expose le port de Flask pour faciliter le débogage direct
+    ports:
+      - "5000:5000"
+  
+  nginx:
+    # En développement, on peut utiliser un port différent
+    ports:
+      - "${EXPOSED_PORT:-5006}:${NGINX_PORT:-80}" 

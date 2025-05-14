@@ -1,0 +1,35 @@
+services:
+  # Service d'application (Flask)
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.flask
+    container_name: ${APP_NAME:-flask-app}-app
+    restart: ${RESTART_POLICY:-unless-stopped}
+    networks:
+      - app-network
+    volumes:
+      - ./app:/app/app
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - FLASK_DEBUG=${FLASK_DEBUG:-0}
+      - FLASK_APP=${FLASK_APP:-app.py}
+      - NETWORK_NAME=${NETWORK_NAME:-app-network}
+    # Pas d'exposition de port vers l'extérieur, uniquement accessible via le réseau interne
+
+  # Service web (Nginx)
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    restart: ${RESTART_POLICY:-unless-stopped}
+    ports:
+      - "${EXPOSED_PORT:-5006}:${NGINX_PORT:-80}"
+    depends_on:
+      - flask-app
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge 
