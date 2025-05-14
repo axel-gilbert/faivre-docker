@@ -1,0 +1,7 @@
+{
+  "APP_NAME": "Flask Docker Volume Demo",
+  "DEBUG": false,
+  "VERSION": "1.0.0",
+  "ADMIN_EMAIL": "admin@example.com",
+  "MAX_MESSAGES": 100
+} 
